@@ -29,14 +29,18 @@ import           Control.Monad (unless, void)
 import           Data.Monoid (mconcat)
 import           Database.PostgreSQL.Simple.Compat ((<>), toByteString)
 import           Database.PostgreSQL.Simple.FromRow (FromRow(..))
-import           Database.PostgreSQL.Simple.Types (Query(..))
+import           Database.PostgreSQL.Simple.ToField (ToField(..))
+import           Database.PostgreSQL.Simple.Types (Identifier(..), Query(..))
 import           Database.PostgreSQL.Simple.Internal as Base hiding (result, row)
 import           Database.PostgreSQL.Simple.Internal.PQResultUtils
 import           Database.PostgreSQL.Simple.Transaction
 import qualified Database.PostgreSQL.LibPQ as PQ
+import qualified Data.Text.Encoding as T
 
 -- | Cursor within a transaction.
 data Cursor = Cursor !Query !Connection
+instance ToField Cursor where
+  toField (Cursor name _conn) = toField $ Identifier $ T.decodeUtf8 $ fromQuery name
 
 -- | Declare a temporary cursor. The cursor is given a
 -- unique name for the given connection.
